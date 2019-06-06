@@ -34,22 +34,19 @@ const Types = require('@cennznet/types');
 export const DEFAULT_TIMEOUT = 30000;
 
 export class Api extends ApiPromise {
-    static async create(provider: ApiOptions | ProviderInterface = {}): Promise<Api> {
-        const options =
-            isObject(provider) && isFunction((provider as ProviderInterface).send)
-                ? ({provider} as ApiOptions)
-                : ({...provider} as ApiOptions);
-
+    static async create(options: ApiOptions | ProviderInterface = {}): Promise<Api> {
         const api = await new Api(options);
         return withTimeout(
             new Promise((resolve, reject) => {
-                api.isReady.then(api => resolve(api)).catch(e => reject(e));
+                api.isReady.then(resolve, reject);
 
                 api.once('error', err => {
-                    reject(err);
+                    reject(new Error('Connection fail'));
                 });
             }),
-            options.timeout
+            isObject(options) && isFunction((options as ProviderInterface).send)
+                ? undefined
+                : (options as ApiOptions).timeout
         );
     }
 
@@ -63,7 +60,12 @@ export class Api extends ApiPromise {
      */
     cennzxSpot?: CennzxSpot;
 
-    constructor(options: ApiOptions) {
+    constructor(provider: ApiOptions | ProviderInterface = {}) {
+        const options =
+            isObject(provider) && isFunction((provider as ProviderInterface).send)
+                ? ({provider} as ApiOptions)
+                : ({...provider} as ApiOptions);
+
         if (typeof options.provider === 'string') {
             options.provider = getProvider(options.provider);
         }
@@ -88,16 +90,15 @@ export class Api extends ApiPromise {
 }
 
 function withTimeout(promise: Promise<any>, timeoutMs: number = DEFAULT_TIMEOUT): Promise<any> {
-    if (timeoutMs <= 0) {
+    if (timeoutMs === 0) {
         return promise;
     }
 
     return Promise.race([
         promise,
         new Promise((reslove, reject) => {
-            const timeout = setTimeout(() => {
-                clearTimeout(timeout);
-                reject(`Timed out in ${timeoutMs} ms.`);
+            setTimeout(() => {
+                reject(new Error(`Timed out in ${timeoutMs} ms.`));
             }, timeoutMs);
         }),
     ]);

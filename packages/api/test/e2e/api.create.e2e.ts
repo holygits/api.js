@@ -39,20 +39,28 @@ describe('e2e api create', () => {
     });
 
     it('should create an Api instance with the timeout option', async () => {
-        const endPoint = 'wss://kauri.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
-        const api = await Api.create({provider: endPoint, timeout: 1000000000});
+        const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
+        const api = await Api.create({provider: endPoint, timeout: 10000000});
+        const hash = await api.rpc.chain.getBlockHash() as Hash;
+
+        expect(hash).toBeDefined();
+    });
+
+    it('create Api without timeout if timeout is 0', async () => {
+        const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
+        const api = await Api.create({provider: endPoint, timeout: 0});
         const hash = await api.rpc.chain.getBlockHash() as Hash;
 
         expect(hash).toBeDefined();
     });
 
     it('should get rejected if the connection fails', async () => {
-        const incorrectEndPoint = 'wss://kauri.centrality.cloud/'
-        await expect(Api.create({provider: incorrectEndPoint})).rejects.toBeDefined();
+        const incorrectEndPoint = 'wss://rimu.centrality.cloud/'
+        await expect(Api.create({provider: incorrectEndPoint})).rejects.toThrow();
     });
 
     it('should get rejected if it is not resolved in a specific period of time', async () => {
-        const endPoint = 'wss://kauri.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
-        await expect(Api.create({provider: endPoint, timeout: 1})).rejects.toBeDefined();
+        const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
+        await expect(Api.create({provider: endPoint, timeout: -1})).rejects.toThrow();
     });
 });

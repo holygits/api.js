@@ -16,8 +16,18 @@ import {ApiRx} from '../../src/ApiRx';
 
 describe('e2e rx api create', () => {
     it('should create an Api instance with the timeout option', async (done) => {
-        const endPoint = 'wss://kauri.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
-        const api = await ApiRx.create({provider: endPoint, timeout: 1000000000}).toPromise();
+        const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
+        const api = await ApiRx.create({provider: endPoint, timeout: 0}).toPromise();
+
+        api.rpc.chain.getBlockHash().subscribe(hash => {
+            expect(hash).toBeDefined();
+            done();
+        })
+    });
+
+    it('should create Api without timeout if timeout is 0', async (done) => {
+        const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
+        const api = await ApiRx.create({provider: endPoint, timeout: 0}).toPromise();
 
         api.rpc.chain.getBlockHash().subscribe(hash => {
             expect(hash).toBeDefined();
@@ -26,14 +36,14 @@ describe('e2e rx api create', () => {
     });
 
     it('should get error if the connection fails', async () => {
-        const incorrectEndPoint = 'wss://kauri.centrality.cloud/';
+        const incorrectEndPoint = 'wss://rimu.centrality.cloud/';
 
         await expect(ApiRx.create({provider: incorrectEndPoint}).toPromise()).rejects.toThrow();
     });
 
     it('should get rejected if it is not resolved in a specific period of time', async () => {
-        const endPoint = 'wss://kauri.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
+        const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
 
-        await expect(ApiRx.create({provider: endPoint, timeout: 1}).toPromise()).rejects.toThrow();
+        await expect(ApiRx.create({provider: endPoint, timeout: -1}).toPromise()).rejects.toThrow();
     });
 });
