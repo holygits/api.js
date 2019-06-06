@@ -37,9 +37,10 @@ const Types = require('@cennznet/types');
 export class ApiRx extends ApiRxBase {
     static create(options: ApiOptions | ProviderInterface = {}): Observable<ApiRx> {
         const apiRx = new ApiRx(options);
-        const timeoutMs = isObject(options) && isFunction((options as ProviderInterface).send)
-            ? undefined
-            : (options as ApiOptions).timeout;
+        const timeoutMs =
+            isObject(options) && isFunction((options as ProviderInterface).send)
+                ? undefined
+                : (options as ApiOptions).timeout;
 
         return race(
             apiRx.isReady.pipe(timeout(timeoutMs ? timeoutMs : DEFAULT_TIMEOUT)),

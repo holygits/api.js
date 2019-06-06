@@ -31,7 +31,7 @@ export interface ApiOptions extends Pick<ApiOptionsBase, Exclude<keyof ApiOption
     plugins?: IPlugin[];
     // default timeout = 30000 ms
     // timeout = 0 indicates no limit
-    timeout?: number; 
+    timeout?: number;
 }
 
 export type AnyAddress = BN | Address | AccountId | Array<number> | Uint8Array | number | string;
