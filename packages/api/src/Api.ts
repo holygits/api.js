@@ -31,9 +31,26 @@ import logger from './util/logging';
 
 const Types = require('@cennznet/types');
 
+export const DEFAULT_TIMEOUT = 30000;
+
 export class Api extends ApiPromise {
-    static async create(options: ApiOptions | ProviderInterface = {}): Promise<Api> {
-        return new Api(options).isReady;
+    static async create(provider: ApiOptions | ProviderInterface = {}): Promise<Api> {
+        const options =
+            isObject(provider) && isFunction((provider as ProviderInterface).send)
+                ? ({provider} as ApiOptions)
+                : ({...provider} as ApiOptions);
+
+        const api = await new Api(options);
+        return withTimeout(
+            new Promise((resolve, reject) => {
+                api.isReady.then(api => resolve(api)).catch(e => reject(e));
+
+                api.once('error', err => {
+                    reject(err);
+                });
+            }),
+            options.timeout
+        );
     }
 
     // TODO: add other crml namespaces
@@ -46,11 +63,7 @@ export class Api extends ApiPromise {
      */
     cennzxSpot?: CennzxSpot;
 
-    constructor(provider: ApiOptions | ProviderInterface = {}) {
-        const options =
-            isObject(provider) && isFunction((provider as ProviderInterface).send)
-                ? ({provider} as ApiOptions)
-                : ({...provider} as ApiOptions);
+    constructor(options: ApiOptions) {
         if (typeof options.provider === 'string') {
             options.provider = getProvider(options.provider);
         }
@@ -72,4 +85,20 @@ export class Api extends ApiPromise {
             injectPlugins(this, plugins);
         }
     }
+}
+
+function withTimeout(promise: Promise<any>, timeoutMs: number = DEFAULT_TIMEOUT): Promise<any> {
+    if (timeoutMs <= 0) {
+        return promise;
+    }
+
+    return Promise.race([
+        promise,
+        new Promise((reslove, reject) => {
+            const timeout = setTimeout(() => {
+                clearTimeout(timeout);
+                reject(`Timed out in ${timeoutMs} ms.`);
+            }, timeoutMs);
+        }),
+    ]);
 }

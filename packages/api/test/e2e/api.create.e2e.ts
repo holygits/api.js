@@ -15,11 +15,21 @@
 import {Api} from '../../src/Api';
 import staticMetadata from '../../src/staticMetadata';
 import WsProvider from '@plugnet/rpc-provider/ws';
-import {Metadata} from '@plugnet/types';
+import {Metadata, Hash} from '@plugnet/types';
 
 describe('e2e api create', () => {
-    it('For Kauri environment - checking if static metadata is same as latest', async () => {
+    it.skip('For Kauri environment - checking if static metadata is same as latest', async () => {
         const endPoint = 'wss://kauri.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0';
+        const websocket = new WsProvider(endPoint);
+        const api = await Api.create({provider: websocket, timeout: 10000});
+        const meta = staticMetadata[`${api.genesisHash.toHex()}-${api.runtimeVersion.specVersion.toNumber()}`];
+        expect(api.runtimeMetadata.toJSON()).toEqual(new Metadata(meta).toJSON());
+        (websocket as any).websocket.onclose = null;
+        (websocket as any).websocket.close();
+    });
+
+    it.skip('For Rimu environment - checking if static metadata is same as latest', async () => {
+        const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0';
         const websocket = new WsProvider(endPoint);
         const api = await Api.create({provider: websocket});
         const meta = staticMetadata[`${api.genesisHash.toHex()}-${api.runtimeVersion.specVersion.toNumber()}`];
@@ -28,13 +38,21 @@ describe('e2e api create', () => {
         (websocket as any).websocket.close();
     });
 
-    it('For Rimu environment - checking if static metadata is same as latest', async () => {
-        const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0';
-        const websocket = new WsProvider(endPoint);
-        const api = await Api.create({provider: websocket});
-        const meta = staticMetadata[`${api.genesisHash.toHex()}-${api.runtimeVersion.specVersion.toNumber()}`];
-        expect(api.runtimeMetadata.toJSON()).toEqual(new Metadata(meta).toJSON());
-        (websocket as any).websocket.onclose = null;
-        (websocket as any).websocket.close();
+    it('should create an Api instance with the timeout option', async () => {
+        const endPoint = 'wss://kauri.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
+        const api = await Api.create({provider: endPoint, timeout: 1000000000});
+        const hash = await api.rpc.chain.getBlockHash() as Hash;
+
+        expect(hash).toBeDefined();
+    });
+
+    it('should get rejected if the connection fails', async () => {
+        const incorrectEndPoint = 'wss://kauri.centrality.cloud/'
+        await expect(Api.create({provider: incorrectEndPoint})).rejects.toBeDefined();
+    });
+
+    it('should get rejected if it is not resolved in a specific period of time', async () => {
+        const endPoint = 'wss://kauri.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
+        await expect(Api.create({provider: endPoint, timeout: 1})).rejects.toBeDefined();
     });
 });

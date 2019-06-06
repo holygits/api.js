@@ -23,17 +23,35 @@ import {ApiOptions as ApiOptionsBase} from '@plugnet/api/types';
 import {ProviderInterface} from '@plugnet/rpc-provider/types';
 import {isFunction, isObject} from '@plugnet/util';
 
-import {Observable} from 'rxjs';
+import {fromEvent, Observable, race} from 'rxjs';
+import {switchMap, timeout} from 'rxjs/operators';
+import {DEFAULT_TIMEOUT} from './Api';
 import * as derives from './derives';
 import staticMetadata from './staticMetadata';
 import {ApiOptions, IPlugin} from './types';
 import {getProvider} from './util/getProvider';
 import logger from './util/logging';
+
 const Types = require('@cennznet/types');
 
 export class ApiRx extends ApiRxBase {
-    static create(options: ApiOptions | ProviderInterface = {}): Observable<ApiRx> {
-        return new ApiRx(options).isReady;
+    static create(provider: ApiOptions | ProviderInterface = {}): Observable<ApiRx> {
+        const options =
+            isObject(provider) && isFunction((provider as ProviderInterface).send)
+                ? ({provider} as ApiOptions)
+                : ({...provider} as ApiOptions);
+        if (typeof options.provider === 'string') {
+            options.provider = getProvider(options.provider);
+        }
+
+        const apiRx = new ApiRx(options);
+
+        return race(
+            apiRx.isReady.pipe(timeout(options.timeout ? options.timeout : DEFAULT_TIMEOUT)),
+            fromEvent((apiRx as any)._eventemitter, 'error').pipe(switchMap(err => 
+                Observable.throw(err)
+            ))
+        );
     }
 
     // TODO: add other crml namespaces
@@ -46,14 +64,7 @@ export class ApiRx extends ApiRxBase {
      */
     cennzxSpot?: CennzxSpotRx;
 
-    constructor(provider: ApiOptions | ProviderInterface = {}) {
-        const options =
-            isObject(provider) && isFunction((provider as ProviderInterface).send)
-                ? ({provider} as ApiOptions)
-                : ({...provider} as ApiOptions);
-        if (typeof options.provider === 'string') {
-            options.provider = getProvider(options.provider);
-        }
+    constructor(options: ApiOptions) {
         options.metadata = Object.assign(staticMetadata, options.metadata);
         let plugins: IPlugin[] = options.plugins || [];
         try {

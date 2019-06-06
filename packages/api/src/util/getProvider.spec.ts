@@ -14,7 +14,7 @@
 
 import {HttpProvider, WsProvider} from '@plugnet/rpc-provider';
 
-import {getProvider} from './util/getProvider';
+import {getProvider} from './getProvider';
 
 describe('getProvider()', () => {
     it('will create a ws provider if the string is a valid url and start with ws or wss', () => {
