@@ -31,7 +31,7 @@ import logger from './util/logging';
 
 const Types = require('@cennznet/types');
 
-export const DEFAULT_TIMEOUT = 30000;
+export const DEFAULT_TIMEOUT = 10000;
 
 export class Api extends ApiPromise {
     static async create(options: ApiOptions | ProviderInterface = {}): Promise<Api> {
