@@ -30,6 +30,7 @@ import * as derives from './derives';
 import staticMetadata from './staticMetadata';
 import {ApiOptions, IPlugin} from './types';
 import {getProvider} from './util/getProvider';
+import {getTimeout} from './util/getTimeout';
 import logger from './util/logging';
 
 const Types = require('@cennznet/types');
@@ -37,11 +38,8 @@ const Types = require('@cennznet/types');
 export class ApiRx extends ApiRxBase {
     static create(options: ApiOptions | ProviderInterface = {}): Observable<ApiRx> {
         const apiRx = new ApiRx(options);
-        const timeoutMs =
-            isObject(options) && isFunction((options as ProviderInterface).send)
-                ? undefined
-                : (options as ApiOptions).timeout;
 
+        const timeoutMs = getTimeout(options);
         return race(
             apiRx.isReady.pipe(timeout(timeoutMs ? timeoutMs : DEFAULT_TIMEOUT)),
             fromEvent((apiRx as any)._eventemitter, 'error').pipe(

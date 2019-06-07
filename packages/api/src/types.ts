@@ -29,7 +29,7 @@ export interface ApiOptions extends Pick<ApiOptionsBase, Exclude<keyof ApiOption
      */
     provider?: ProviderInterface | string;
     plugins?: IPlugin[];
-    // default timeout = 30000 ms
+    // default timeout = 10000 ms
     // timeout = 0 indicates no limit
     timeout?: number;
 }
