@@ -23,7 +23,7 @@ import {ApiOptions as ApiOptionsBase} from '@plugnet/api/types';
 import {ProviderInterface} from '@plugnet/rpc-provider/types';
 import {isFunction, isObject} from '@plugnet/util';
 
-import {fromEvent, Observable, race} from 'rxjs';
+import {fromEvent, Observable, race, throwError} from 'rxjs';
 import {switchMap, timeout} from 'rxjs/operators';
 import {DEFAULT_TIMEOUT} from './Api';
 import * as derives from './derives';
@@ -44,7 +44,9 @@ export class ApiRx extends ApiRxBase {
 
         return race(
             apiRx.isReady.pipe(timeout(timeoutMs ? timeoutMs : DEFAULT_TIMEOUT)),
-            fromEvent((apiRx as any)._eventemitter, 'error').pipe(switchMap(err => Observable.throw(err)))
+            fromEvent((apiRx as any)._eventemitter, 'error').pipe(
+                switchMap(err => throwError(new Error('Connection fail')))
+            )
         );
     }
 

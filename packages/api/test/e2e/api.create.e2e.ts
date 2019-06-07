@@ -56,11 +56,11 @@ describe('e2e api create', () => {
 
     it('should get rejected if the connection fails', async () => {
         const incorrectEndPoint = 'wss://rimu.centrality.cloud/'
-        await expect(Api.create({provider: incorrectEndPoint})).rejects.toThrow();
+        await expect(Api.create({provider: incorrectEndPoint})).rejects.toThrow(/Connection fail/);
     });
 
     it('should get rejected if it is not resolved in a specific period of time', async () => {
         const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
-        await expect(Api.create({provider: endPoint, timeout: -1})).rejects.toThrow();
+        await expect(Api.create({provider: endPoint, timeout: -1})).rejects.toThrow(/Timed out in -1 ms./);
     });
 });
