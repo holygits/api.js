@@ -26,7 +26,7 @@ import getPlugins from './plugins';
 import staticMetadata from './staticMetadata';
 import {ApiOptions, IPlugin} from './types';
 import {getProvider} from './util/getProvider';
-import { getTimeout } from './util/getTimeout';
+import {getTimeout} from './util/getTimeout';
 import {injectOption, injectPlugins, mergePlugins} from './util/injectPlugin';
 import logger from './util/logging';
 
