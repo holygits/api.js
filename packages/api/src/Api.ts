@@ -39,17 +39,17 @@ export class Api extends ApiPromise {
         const api = await new Api(options);
         return withTimeout(
             new Promise((resolve, reject) => {
-                api.isReady.then(res => {
-                    //  Remove error listener if API initialization success.
-                    (api as any)._eventemitter.removeListener('error', rejectError);
-                    resolve(res);
-                }, reject);
-
                 const rejectError = err => {
                     // Disconnect provider if API initialization fails
                     api.disconnect();
                     reject(new Error('Connection fail'));
                 };
+
+                api.isReady.then(res => {
+                    //  Remove error listener if API initialization success.
+                    (api as any)._eventemitter.removeListener('error', rejectError);
+                    resolve(res);
+                }, reject);
 
                 api.once('error', rejectError);
             }),

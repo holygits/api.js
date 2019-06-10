@@ -17,7 +17,7 @@ import {ApiRx} from '../../src/ApiRx';
 describe('e2e rx api create', () => {
     it('should create an Api instance with the timeout option', async (done) => {
         const endPoint = 'wss://rimu.centrality.cloud/ws?apikey=d449e2d0-868a-4f38-b977-b99e1476b7f0'
-        const api = await ApiRx.create({provider: endPoint, timeout: 0}).toPromise();
+        const api = await ApiRx.create({provider: endPoint}).toPromise();
 
         api.rpc.chain.getBlockHash().subscribe(hash => {
             expect(hash).toBeDefined();
