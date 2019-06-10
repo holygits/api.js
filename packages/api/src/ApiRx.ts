@@ -41,19 +41,18 @@ export class ApiRx extends ApiRxBase {
 
         const timeoutMs = getTimeout(options);
 
+        const rejectError = fromEvent((apiRx as any)._eventemitter, 'error').pipe(
+            switchMap(err => {
+                // Disconnect provider if API initialization fails
+                apiRx.disconnect();
+
+                return throwError(new Error('Connection fail'));
+            })
+        );
+
         return timeoutMs === 0
-            ? race(
-                  apiRx.isReady,
-                  fromEvent((apiRx as any)._eventemitter, 'error').pipe(
-                      switchMap(err => throwError(new Error('Connection fail')))
-                  )
-              )
-            : race(
-                  apiRx.isReady.pipe(timeout(timeoutMs === undefined ? DEFAULT_TIMEOUT : timeoutMs)),
-                  fromEvent((apiRx as any)._eventemitter, 'error').pipe(
-                      switchMap(err => throwError(new Error('Connection fail')))
-                  )
-              );
+            ? race(apiRx.isReady, rejectError)
+            : race(apiRx.isReady.pipe(timeout(timeoutMs === undefined ? DEFAULT_TIMEOUT : timeoutMs)), rejectError);
     }
 
     // TODO: add other crml namespaces
