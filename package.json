@@ -51,5 +51,12 @@
         "hooks": {
             "pre-commit": "prettier --write 'packages/**/src/**/*'"
         }
+    },
+    "dependencies": {
+        "@cennznet/api": "^0.13.7",
+        "@cennznet/crml-attestation": "^0.4.1",
+        "@cennznet/crml-cennzx-spot": "^0.5.6",
+        "@cennznet/crml-generic-asset": "^0.9.0",
+        "doughnut-maker": "github:cennznet/doughnut-maker"
     }
 }
