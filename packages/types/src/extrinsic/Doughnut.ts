@@ -12,17 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AccountId, Signature, Text, U32, U64 } from '@plugnet/types';
+import { AccountId, U64 } from '@plugnet/types';
 import { generateDoughnut, verifyDoughnut } from 'doughnut-maker';
-import { isHex, isU8a, u8aToHex, u8aToU8a, stringCamelCase } from '@plugnet/util';
+import { u8aToHex } from '@plugnet/util';
 import { Keypair } from '@plugnet/util-crypto/types';
-
 
 const PAYLOAD_VERSION = 0;
 const SIGNATURE_METHOD = 0;
 
 /**
- * A Doughnut certificate
+ * A v0 Doughnut certificate
  **/
 export class Doughnut {
 
